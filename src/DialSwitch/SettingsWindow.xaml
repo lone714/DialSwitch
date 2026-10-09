@@ -157,6 +157,8 @@
                                 <TextBlock Text="設定 Windows 滾輪（只需要做一次）" FontWeight="SemiBold" />
                                 <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
                                            Text="按「自動設定」會把工具 1 設為自訂工具並填入上面三組快速鍵；寫入前會備份 Windows 原本的設定，隨時可以還原。" />
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,6,0,0" FontWeight="SemiBold"
+                                           Text="注意：每次重新開機後，Windows 會選回「捲動」工具。旋鈕若只會捲動頁面，請長按旋鈕叫出滾輪選單，選工具 1（自訂工具）。" />
                                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                                     <Button Content="自動設定 Windows 滾輪" Padding="14,6" Style="{DynamicResource AccentButtonStyle}" Click="OnSetupWheel" />
                                     <Button Content="還原原本的滾輪設定" Padding="14,6" Margin="8,0,0,0" Click="OnRestoreWheel"
