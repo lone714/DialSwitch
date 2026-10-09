@@ -33,7 +33,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TabControl Margin="16,12,16,0">
+        <TabControl x:Name="Tabs" Margin="16,12,16,0">
 
             <!-- ===== 音訊模式 ===== -->
             <TabItem Header="音訊模式">

@@ -1,4 +1,4 @@
-// 旋鈕切換
+﻿// 旋鈕切換
 //
 // 搭配 Windows「滾輪」的自訂工具：滾輪把旋轉、按下轉成快速鍵，這個常駐程式接收快速鍵後：
 //   按一下旋鈕 → 切換「旋鈕功能」：音量調整 ⇄ 音訊切換
@@ -32,6 +32,10 @@ static class Program
             case "--restore-wheel":
                 WheelSetup.Restore();
                 return;
+            case "--doc-shots":
+                // 產生 README 用的截圖：用示範模式，不註冊快速鍵、不建立系統匣圖示、不改任何設定
+                new App(null, args.Length > 1 ? args[1] : Path.Combine("docs", "images")).Run();
+                return;
         }
 
         using var mutex = new Mutex(true, MutexName, out bool isFirst);
@@ -54,7 +58,8 @@ sealed class App : Application
 {
     const int HotkeyRight = 1, HotkeyLeft = 2, HotkeyPress = 3, HotkeyModeBase = 100;
 
-    readonly EventWaitHandle _showSettingsSignal;
+    readonly EventWaitHandle? _showSettingsSignal;
+    readonly string? _docShotsFolder;
     readonly ModeSwitcher _switcher = new();
     RegisteredWaitHandle? _signalWait;
     HotkeyManager? _hotkeys;
@@ -65,9 +70,10 @@ sealed class App : Application
     public AppSettings Settings { get; private set; } = new();
     public DialFunction Function { get; private set; }
 
-    public App(EventWaitHandle showSettingsSignal)
+    public App(EventWaitHandle? showSettingsSignal, string? docShotsFolder = null)
     {
         _showSettingsSignal = showSettingsSignal;
+        _docShotsFolder = docShotsFolder;
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
         ThemeMode = ThemeMode.System; // WPF Fluent 主題，跟隨系統深淺色
     }
@@ -81,6 +87,18 @@ sealed class App : Application
             args.Handled = true; // 記錄下來但不讓整個程式結束
         };
 
+        if (_docShotsFolder is not null)
+        {
+            Settings = DocShots.DemoSettings();
+            Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                try { await DocShots.Run(this, _docShotsFolder); }
+                catch (Exception ex) { Log.Write("截圖失敗: " + ex); }
+                Shutdown();
+            }));
+            return;
+        }
+
         Settings = SettingsStore.Load(out bool isNew);
         if (isNew) TrySave();
         Function = Settings.StartupFunction;
@@ -92,7 +110,7 @@ sealed class App : Application
         RegisterHotkeys();
         UpdateTooltip();
 
-        _signalWait = ThreadPool.RegisterWaitForSingleObject(_showSettingsSignal,
+        _signalWait = ThreadPool.RegisterWaitForSingleObject(_showSettingsSignal!,
             (_, _) => Dispatcher.BeginInvoke(ShowSettings), null, Timeout.Infinite, executeOnlyOnce: false);
 
         Log.Write($"啟動 v{typeof(App).Assembly.GetName().Version}，{Settings.Modes.Count} 個模式");

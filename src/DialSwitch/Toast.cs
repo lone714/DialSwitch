@@ -111,9 +111,11 @@ sealed class Toast : Form
         DwmSetWindowAttribute(Handle, DWMWA_BORDER_COLOR, ref border, sizeof(int));
     }
 
-    protected override void OnPaint(PaintEventArgs e)
+    protected override void OnPaint(PaintEventArgs e) => PaintCard(e.Graphics, ClientSize);
+
+    void PaintCard(Graphics g, Size size)
     {
-        var g = e.Graphics;
+        int Width = size.Width, Height = size.Height;
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.PixelOffsetMode = PixelOffsetMode.HighQuality;
         g.Clear(Background);
@@ -136,6 +138,42 @@ sealed class Toast : Form
         int top = (Height - titleH - gap - detailH) / 2;
         TextRenderer.DrawText(g, _title, _titleFont, new Rectangle(textLeft, top, textWidth, titleH), Foreground, Background, flags);
         TextRenderer.DrawText(g, _detail, _detailFont, new Rectangle(textLeft, top + titleH + gap, textWidth, detailH), Secondary, Background, flags);
+    }
+
+    /// <summary>把提示卡片畫成圓角圖片（文件截圖用），不顯示視窗。</summary>
+    public static Bitmap RenderPreview(string icon, string title, string detail, bool error, bool dark, float scale)
+    {
+        using var toast = new Toast { _glyph = Icons.Glyph(icon), _title = title, _detail = detail, _error = error, _dark = dark };
+        toast.SetScale(scale);
+        var size = new Size(toast.S(CardWidth), toast.S(CardHeight));
+
+        // GDI 文字畫在透明底上會破圖，先畫在不透明底上，再用圓角路徑貼到透明圖片。
+        using var opaque = new Bitmap(size.Width, size.Height);
+        using (var g = Graphics.FromImage(opaque)) toast.PaintCard(g, size);
+
+        var result = new Bitmap(size.Width, size.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using (var g = Graphics.FromImage(result))
+        using (var path = RoundRect(new RectangleF(0.5f, 0.5f, size.Width - 1, size.Height - 1), toast.S(8)))
+        using (var brush = new TextureBrush(opaque))
+        using (var pen = new Pen(toast.Border))
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.FillPath(brush, path);
+            g.DrawPath(pen, path);
+        }
+        return result;
+    }
+
+    static GraphicsPath RoundRect(RectangleF r, float radius)
+    {
+        var p = new GraphicsPath();
+        float d = radius * 2;
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
     }
 
     void SetScale(float scale)

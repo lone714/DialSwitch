@@ -61,9 +61,17 @@ public sealed record Hotkey(uint Modifiers, uint Key)
         if ((Modifiers & MOD_ALT) != 0) parts.Add("Alt");
         if ((Modifiers & MOD_SHIFT) != 0) parts.Add("Shift");
         if ((Modifiers & MOD_WIN) != 0) parts.Add("Win");
-        parts.Add(System.Windows.Input.KeyInterop.KeyFromVirtualKey((int)Key).ToString());
+        parts.Add(KeyName(Key));
         return string.Join("+", parts);
     }
+
+    /// <summary>按鍵的顯示名稱：數字鍵顯示 1 而不是 .NET 的 D1。</summary>
+    static string KeyName(uint vk) => vk switch
+    {
+        >= 0x30 and <= 0x39 => ((char)vk).ToString(),           // 0–9
+        >= 0x60 and <= 0x69 => "Num " + (char)('0' + vk - 0x60), // 數字鍵盤 0–9
+        _ => System.Windows.Input.KeyInterop.KeyFromVirtualKey((int)vk).ToString(),
+    };
 }
 
 static class SettingsStore

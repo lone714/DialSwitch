@@ -12,6 +12,22 @@
 
 支援 Windows 10（1809 以上）/ Windows 11，x64。
 
+<p align="center"><img src="docs/images/settings-modes.png" width="720" alt="設定視窗：音訊模式"></p>
+
+## 使用流程
+
+平常旋鈕就是音量旋鈕；想換裝置時按一下、轉一下，再按一下回到音量。
+
+| 步驟 | 畫面 |
+|---|---|
+| **1. 平常**：旋鈕功能是「音量調整」，旋轉時跟一般音量旋鈕一樣，Windows 照常顯示音量提示 | <img src="docs/images/toast-dial-volume.png" width="320" alt="旋鈕：音量調整"> |
+| **2. 按一下旋鈕**：切換成「音訊切換」，提示會顯示目前的模式 | <img src="docs/images/toast-dial-switch.png" width="320" alt="旋鈕：音訊切換"> |
+| **3. 旋轉**：往右轉切到下一個模式、往左轉切到上一個，提示顯示模式名稱與套用的裝置 | <img src="docs/images/toast-mode.png" width="320" alt="切換到耳機模式"><br><img src="docs/images/toast-mode-monitor.png" width="320" alt="切換到螢幕喇叭模式"> |
+| **4. 再按一下旋鈕**：回到「音量調整」 | |
+| 裝置沒接上（例如螢幕切到別的輸入來源）時，會顯示紅色提示，不會當掉 | <img src="docs/images/toast-error.png" width="320" alt="找不到裝置"> |
+
+也可以不用旋鈕：每個模式都能設定專屬快速鍵（例如 `Ctrl+Alt+1` 直接切到「耳機」），或在系統匣圖示按右鍵直接選模式。
+
 ## 安裝
 
 到發佈頁下載其中一種：
@@ -53,6 +69,8 @@
 
 這三組快速鍵可以在程式的「設定 → 旋鈕與快速鍵」修改，設定頁裡也有同樣的步驟說明和「開啟 Windows 滾輪設定」按鈕。
 
+<p align="center"><img src="docs/images/settings-wheel.png" width="640" alt="設定視窗：自動 / 手動設定 Windows 滾輪"></p>
+
 沒有滾輪裝置也能用：直接按上面的快速鍵，或在系統匣選單點選模式。
 
 ### 2. 建立音訊模式
@@ -63,6 +81,8 @@
 - **輸出裝置 / 輸入裝置**：選「（不變更）」就不動那一項
 - **通話軟體也一起切換**：勾選時同時設為「預設通訊裝置」（Discord、Teams、LINE 通話等使用）
 - **專屬快速鍵**（選填）
+
+<p align="center"><img src="docs/images/settings-modes.png" width="640" alt="設定視窗：編輯音訊模式"></p>
 
 左側清單的順序就是旋鈕切換的順序。建議關閉「轉到最後一個模式後繞回第一個」，這樣連轉好幾格時會停在頭尾，不會來回跳。
 
@@ -79,7 +99,13 @@
 | 系統匣圖示：左鍵 | 開啟設定 |
 | 系統匣圖示：右鍵 | 選擇模式、開啟紀錄檔、結束 |
 
-程式已在執行時，再從開始功能表開一次會直接打開設定視窗。
+<p align="center"><img src="docs/images/tray-menu.png" width="300" alt="系統匣右鍵選單"></p>
+
+右鍵選單最上面顯示目前的旋鈕功能，目前套用中的模式前面有藍點。程式已在執行時，再從開始功能表開一次會直接打開設定視窗。
+
+「設定 → 旋鈕與快速鍵」可以修改旋鈕的三組快速鍵、啟動時的旋鈕功能，以及轉到頭尾時要不要繞回；「一般」分頁可以開關開機自動啟動與切換提示。
+
+<p align="center"><img src="docs/images/settings-dial.png" width="45%" alt="設定：旋鈕與快速鍵"> <img src="docs/images/settings-general.png" width="45%" alt="設定：一般"></p>
 
 ## 檔案位置
 
@@ -116,6 +142,9 @@ powershell -ExecutionPolicy Bypass -File .\build.ps1
 # 自我測試：重複執行切換流程（不模擬按鍵、不切換裝置），檢查記憶體與控制代碼是否洩漏，
 # 並比對 Windows 滾輪設定的格式；結果在 %LOCALAPPDATA%\DialSwitch\selftest.txt
 .\dist\publish\DialSwitch.exe --selftest 2000
+
+# 重新產生 README 截圖（用示範模式，不改任何設定；設定視窗會短暫出現）
+.\dist\publish\DialSwitch.exe --doc-shots docs\images
 
 # 重新產生程式圖示
 powershell -ExecutionPolicy Bypass -File .\tools\make-icon.ps1
