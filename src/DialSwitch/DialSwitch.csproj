@@ -15,7 +15,7 @@
 
     <AssemblyName>DialSwitch</AssemblyName>
     <Product>旋鈕切換</Product>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Copyright>Copyright (c) 2026 david</Copyright>
   </PropertyGroup>
 
