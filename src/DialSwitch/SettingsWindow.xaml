@@ -1,0 +1,212 @@
+<Window x:Class="DialSwitch.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:DialSwitch"
+        Title="旋鈕切換 設定"
+        Width="900" Height="640" MinWidth="760" MinHeight="540"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Microsoft JhengHei UI, Segoe UI">
+
+    <Window.Resources>
+        <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,16,0,6" />
+        </Style>
+        <Style x:Key="Hint" TargetType="TextBlock">
+            <Setter Property="Opacity" Value="0.7" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,4,0,0" />
+        </Style>
+        <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TabControl Margin="16,12,16,0">
+
+            <!-- ===== 音訊模式 ===== -->
+            <TabItem Header="音訊模式">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250" />
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource Hint}" Margin="0,0,0,8"
+                                   Text="旋鈕轉動時依這個順序前後切換。" />
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Style="{StaticResource IconButton}" Content="&#xE710;" ToolTip="新增模式" Click="OnAddMode" />
+                            <Button Style="{StaticResource IconButton}" Content="&#xE74D;" ToolTip="刪除模式" Click="OnRemoveMode" />
+                            <Button Style="{StaticResource IconButton}" Content="&#xE74A;" ToolTip="往上移" Click="OnMoveUp" />
+                            <Button Style="{StaticResource IconButton}" Content="&#xE74B;" ToolTip="往下移" Click="OnMoveDown" />
+                        </StackPanel>
+                        <ListBox ItemsSource="{Binding Modes}" SelectedItem="{Binding SelectedMode}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                                        <TextBlock Text="{Binding Glyph}" FontFamily="{StaticResource IconFont}" FontSize="18"
+                                                   VerticalAlignment="Center" Width="28" />
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="14" />
+                                            <TextBlock Text="{Binding Summary}" FontSize="11" Opacity="0.65"
+                                                       TextTrimming="CharacterEllipsis" MaxWidth="180" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+
+                    <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <TextBlock Text="按左下角的 ＋ 建立第一個音訊模式。" Style="{StaticResource Hint}"
+                                       Visibility="{Binding NoSelection, Converter={x:Static local:Converters.BoolToVisibility}}" />
+                            <StackPanel DataContext="{Binding SelectedMode}" Margin="0,0,12,16"
+                                        Visibility="{Binding DataContext.HasSelection, RelativeSource={RelativeSource AncestorType=Window}, Converter={x:Static local:Converters.BoolToVisibility}}">
+
+                                <TextBlock Text="名稱" Style="{StaticResource SectionLabel}" Margin="0,0,0,6" />
+                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" MaxLength="40" />
+
+                                <TextBlock Text="圖示" Style="{StaticResource SectionLabel}" />
+                                <ListBox ItemsSource="{x:Static local:SettingsWindow.IconChoices}"
+                                         SelectedValuePath="Code" SelectedValue="{Binding Icon}"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderThickness="0" Background="Transparent">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Glyph}" ToolTip="{Binding Label}" FontFamily="{StaticResource IconFont}"
+                                                       FontSize="20" Width="28" Height="28" TextAlignment="Center" Padding="0,4,0,0" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                                <TextBlock Text="輸出裝置（喇叭 / 耳機）" Style="{StaticResource SectionLabel}" />
+                                <ComboBox ItemsSource="{Binding DataContext.OutputOptions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                          SelectedItem="{Binding Output}" DisplayMemberPath="Display" HorizontalAlignment="Stretch" />
+
+                                <TextBlock Text="輸入裝置（麥克風）" Style="{StaticResource SectionLabel}" />
+                                <ComboBox ItemsSource="{Binding DataContext.InputOptions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                          SelectedItem="{Binding Input}" DisplayMemberPath="Display" HorizontalAlignment="Stretch" />
+
+                                <CheckBox Margin="0,14,0,0" IsChecked="{Binding IncludeCommunications}"
+                                          Content="通話軟體也一起切換（Discord、Teams、LINE 等使用的「預設通訊裝置」）" />
+                                <TextBlock Style="{StaticResource Hint}"
+                                           Text="不勾選時，通話軟體維持原本的裝置。例如切到螢幕喇叭時，Discord 仍留在耳機。" />
+
+                                <TextBlock Text="專屬快速鍵（選填）" Style="{StaticResource SectionLabel}" />
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Margin="6,0,0,0"
+                                            Content="&#xE894;" ToolTip="清除" Click="OnClearModeHotkey" />
+                                    <local:HotkeyBox Hotkey="{Binding Hotkey, Mode=TwoWay}" />
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource Hint}" Text="點一下欄位後按下想要的組合鍵，按下去就直接切到這個模式。" />
+
+                                <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                                    <Button Content="立即套用這個模式" Padding="14,6" Click="OnApplyNow" />
+                                    <Button Content="重新整理裝置清單" Padding="14,6" Margin="8,0,0,0" Click="OnRefreshDevices" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- ===== 旋鈕 ===== -->
+            <TabItem Header="旋鈕與快速鍵">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,12,16" MaxWidth="640" HorizontalAlignment="Left">
+                        <TextBlock TextWrapping="Wrap">
+                            旋鈕有兩種功能，<Run FontWeight="SemiBold">按一下旋鈕</Run>就會在兩者之間切換：
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Hint}" Text="・音量調整：旋轉時調整音量，跟一般音量旋鈕一樣。" />
+                        <TextBlock Style="{StaticResource Hint}" Text="・音訊切換：旋轉時在「音訊模式」之間前後切換。" />
+
+                        <TextBlock Text="向右轉" Style="{StaticResource SectionLabel}" />
+                        <local:HotkeyBox Hotkey="{Binding RotateRight, Mode=TwoWay}" />
+                        <TextBlock Text="向左轉" Style="{StaticResource SectionLabel}" />
+                        <local:HotkeyBox Hotkey="{Binding RotateLeft, Mode=TwoWay}" />
+                        <TextBlock Text="按一下" Style="{StaticResource SectionLabel}" />
+                        <local:HotkeyBox Hotkey="{Binding Press, Mode=TwoWay}" />
+
+                        <TextBlock Text="啟動時的旋鈕功能" Style="{StaticResource SectionLabel}" />
+                        <ComboBox SelectedIndex="{Binding StartupFunctionIndex}" HorizontalAlignment="Left" MinWidth="200">
+                            <ComboBoxItem Content="音量調整" />
+                            <ComboBoxItem Content="音訊切換" />
+                        </ComboBox>
+
+                        <CheckBox Margin="0,16,0,0" IsChecked="{Binding Wrap}" Content="轉到最後一個模式後繞回第一個" />
+                        <TextBlock Style="{StaticResource Hint}" Text="建議關閉：連轉好幾格時會停在頭尾，不會來回跳。" />
+
+                        <Border Margin="0,24,0,0" Padding="16" CornerRadius="8" BorderThickness="1" BorderBrush="#40808080">
+                            <StackPanel>
+                                <TextBlock Text="設定 Windows 滾輪（只需要做一次）" FontWeight="SemiBold" />
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
+                                           Text="按「自動設定」會把工具 1 設為自訂工具並填入上面三組快速鍵；寫入前會備份 Windows 原本的設定，隨時可以還原。" />
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                    <Button Content="自動設定 Windows 滾輪" Padding="14,6" Style="{DynamicResource AccentButtonStyle}" Click="OnSetupWheel" />
+                                    <Button Content="還原原本的滾輪設定" Padding="14,6" Margin="8,0,0,0" Click="OnRestoreWheel"
+                                            IsEnabled="{Binding WheelHasBackup}" />
+                                </StackPanel>
+                                <TextBlock Style="{StaticResource Hint}" Text="{Binding WheelStatus}" />
+
+                                <TextBlock Text="或手動設定：" FontWeight="SemiBold" Margin="0,16,0,0" />
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
+                                           Text="1. 把鍵盤或旋鈕裝置切到「滾輪（Dial）」模式。" />
+                                <TextBlock Style="{StaticResource Hint}"
+                                           Text="2. 開啟「設定 → 藍牙與裝置 → 滾輪」，在「選擇您的預設工具」把工具 1 設為「自訂工具」。" />
+                                <TextBlock Style="{StaticResource Hint}"
+                                           Text="3. 按「編輯捷徑」，把三個動作設成上面的三組快速鍵。" />
+                                <TextBlock Style="{StaticResource Hint}" Text="{Binding WheelSummary}" FontFamily="Consolas, Microsoft JhengHei UI" />
+                                <Button Content="開啟 Windows 滾輪設定" Margin="0,12,0,0" Padding="14,6" HorizontalAlignment="Left" Click="OnOpenWheelSettings" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ===== 一般 ===== -->
+            <TabItem Header="一般">
+                <StackPanel Margin="0,12,12,16" MaxWidth="640" HorizontalAlignment="Left">
+                    <CheckBox IsChecked="{Binding AutoStart}" Content="登入 Windows 時自動啟動" />
+                    <CheckBox Margin="0,12,0,0" IsChecked="{Binding ShowToast}" Content="切換時在畫面下方顯示提示" />
+                    <TextBlock Style="{StaticResource Hint}" Text="錯誤訊息（例如找不到裝置）一定會顯示。" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+                        <Button Content="開啟紀錄檔" Padding="14,6" Click="OnOpenLog" />
+                        <Button Content="開啟設定檔資料夾" Padding="14,6" Margin="8,0,0,0" Click="OnOpenSettingsFolder" />
+                    </StackPanel>
+
+                    <TextBlock Text="關於" Style="{StaticResource SectionLabel}" Margin="0,28,0,6" />
+                    <TextBlock Text="{Binding VersionText}" />
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="本程式只在本機切換 Windows 的預設音訊裝置，不連網、不收集任何資料。" />
+                    <TextBlock Style="{StaticResource Hint}" Text="以 MIT 授權開源，Copyright (c) 2026 david。第三方元件授權見安裝資料夾的 THIRD-PARTY-NOTICES.md。" />
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="1" Padding="16,12" Margin="0,12,0,0">
+            <DockPanel LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Opacity="0.6" Text="{Binding VersionText}" />
+                <Button DockPanel.Dock="Right" Content="取消" MinWidth="96" Padding="14,6" Margin="8,0,0,0" IsCancel="True" Click="OnCancel" />
+                <Button DockPanel.Dock="Right" Content="儲存" MinWidth="96" Padding="14,6" IsDefault="True"
+                        Style="{DynamicResource AccentButtonStyle}" Click="OnSave" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

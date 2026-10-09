@@ -13,3 +13,12 @@ dist/
 .idea/
 Thumbs.db
 Desktop.ini
+*.stackdump
+*.bak
+
+# Visual Studio
+.vs/
+*.user
+
+# 早期可行性測試，不公開
+src/WheelProbe/

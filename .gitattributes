@@ -1,0 +1,10 @@
+# 文字檔在 repo 內一律存 LF，checkout 到 Windows 時轉 CRLF
+* text=auto
+
+# Windows 腳本與安裝腳本固定 CRLF（PowerShell 5.1 / Inno Setup 在 Windows 上使用）
+*.ps1 text eol=crlf
+*.iss text eol=crlf
+
+# 二進位
+*.ico binary
+*.png binary
